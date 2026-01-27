@@ -23,8 +23,8 @@ import { RouterLink } from 'vue-router'
         </div>
 
         <!-- 中 -->
-        <div class="navbar-center w-4/5 max-w-180 justify-center">
-          <div class="join w-4/5 max-w-180">
+        <div class="navbar-center w-4/5 max-w-180 flex justify-center">
+          <div class="join w-4/5 max-w-180 flex justify-center">
             <input class="input join-item" placeholder="搜索你感兴趣的内容" />
             <button class="btn join-item rounded-r-full gap-0">
               <SearchIcon />搜索
@@ -34,7 +34,7 @@ import { RouterLink } from 'vue-router'
 
         <!-- 右 -->
         <div class="navbar-end">
-          <RouterLink to="/login" class="btn btn-ghost">登录</RouterLink>
+          <RouterLink to="/login" active-class="btn-active" class="btn btn-ghost">登录</RouterLink>
         </div>
 
       </nav>

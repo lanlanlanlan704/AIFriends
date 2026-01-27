@@ -3,7 +3,7 @@
 </script>
 
 <template>
-
+简介
 </template>
 
 <style scoped>
