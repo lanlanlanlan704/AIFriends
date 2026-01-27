@@ -5,6 +5,7 @@ import HomepageIcon from "@/components/navbar/icons/HomepageIcon.vue";
 import FriendIcon from "@/components/navbar/icons/FriendIcon.vue";
 import CreateIcon from "@/components/navbar/icons/CreateIcon.vue";
 import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
@@ -22,7 +23,7 @@ import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
         </div>
 
         <!-- 中 -->
-        <div class="navbar-center w-4/5 max-w-180">
+        <div class="navbar-center w-4/5 max-w-180 justify-center">
           <div class="join w-4/5 max-w-180">
             <input class="input join-item" placeholder="搜索你感兴趣的内容" />
             <button class="btn join-item rounded-r-full gap-0">
@@ -33,7 +34,7 @@ import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
 
         <!-- 右 -->
         <div class="navbar-end">
-          <button class="btn btn-ghost">登录</button>
+          <RouterLink to="/login" class="btn btn-ghost">登录</RouterLink>
         </div>
 
       </nav>
@@ -45,22 +46,22 @@ import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
       <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-16 is-drawer-open:w-64">
         <ul class="menu w-full grow">
           <li>
-            <button class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="首页">
+            <RouterLink to="/" class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="首页">
             <HomepageIcon />
             <span class="is-drawer-close:hidden text-base ml-2">首页</span>
-            </button>
+            </RouterLink>
           </li>
           <li>
-            <button class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="好友">
+            <RouterLink to="/friend" class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="好友">
             <FriendIcon />
             <span class="is-drawer-close:hidden text-base ml-2">好友</span>
-            </button>
+            </RouterLink>
           </li>
           <li>
-            <button class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="创作">
+            <RouterLink to="/create" class="sidebar-btn shrink-btn is-drawer-close:tooltip is-drawer-close:tooltip-right py-3" data-tip="创作">
             <CreateIcon />
             <span class="is-drawer-close:hidden text-base ml-2">创作</span>
-            </button>
+            </RouterLink>
           </li>
 
         </ul>
@@ -70,35 +71,34 @@ import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
 </template>
 
 <style scoped>
-/* 只修 hover 框范围 + SVG 居中，不碰宽高布局 */
-
-:deep(li > button) {
+/* 保留你原有所有样式，仅新增对 RouterLink (a标签) 的兼容 */
+:deep(li > button),
+:deep(li > a) { /* 新增：兼容 RouterLink 渲染的 <a> 标签 */
   display: flex;
   align-items: center;
-
-  padding: 6px 10px;      /* 给内容一点内边距 */
+  padding: 6px 10px;
   border-radius: 8px;
-
   background: transparent;
   border: none;
-
-  width: 100%;            /* 保持你原来“整行”逻辑 */
+  width: 100%;
   box-sizing: border-box;
 }
 
-/* hover / active：整行高亮，不出边栏 */
+/* hover/激活态：对 button 和 a 标签都生效 */
 :deep(li > button:hover),
-:deep(li > button.active) {
+:deep(li > button.active),
+:deep(li > a:hover),
+:deep(li > a.router-link-active) { /* 新增：路由激活态高亮 */
   background: #eee;
 }
 
-/* SVG 真正居中（不再 baseline 飘） */
-:deep(li > button svg) {
+/* 图标居中 + 文字间距（保留原有逻辑） */
+:deep(li > button svg),
+:deep(li > a svg) {
   display: block;
 }
-
-/* 图标和文字间距 */
-:deep(li > button span) {
+:deep(li > button span),
+:deep(li > a span) {
   margin-left: 8px;
   white-space: nowrap;
 }
