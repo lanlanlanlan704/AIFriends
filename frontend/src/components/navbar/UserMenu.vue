@@ -1,16 +1,33 @@
 <script setup>
-import {userUserStore} from "@/stores/user.js";
+import {useUserStore} from "@/stores/user.js";
 import UserSpaceIndex from "@/components/navbar/icons/UserSpaceIndex.vue";
 import UserProfileIcon from "@/components/navbar/icons/UserProfileIcon.vue";
 import UserLogoutIcon from "@/components/navbar/icons/UserLogoutIcon.vue";
-const user = userUserStore()
-
+import api from "@/js/http/api.js";
+import {useRouter} from "vue-router";
+const user = useUserStore()
+const router = useRouter()
 
 //点击菜单后菜单自动消失
 function closeMenu() {
   const element = document.activeElement
   if (element && element instanceof HTMLElement) element.blur()
 }
+
+async function handleLogout() {
+  try{
+    const res = await api.post('/api/user/account/logout/')
+    if (res.data.result === 'success'){
+      user.logout()
+      await router.push({
+        name: 'Home'
+      })
+    }
+  } catch(err) {
+    console.log(err)
+  }
+}
+
 </script>
 
 <template>
@@ -47,7 +64,7 @@ function closeMenu() {
       </li>
       <li></li>
       <li>
-        <a @click="closeMenu" class="font-bold py-5">
+        <a @click="handleLogout" class="font-bold py-5">
           <UserLogoutIcon class="mr-3" />退出登录
         </a>
       </li>
