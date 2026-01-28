@@ -42,8 +42,8 @@ const user = useUserStore()
             <CreateIcon />
             创作
           </RouterLink>
-          <RouterLink to="/login" v-if="!user.isLogin()"  active-class="btn-active" class="btn btn-ghost">登录</RouterLink>
-          <UserMenu v-else />
+          <RouterLink to="/login" v-if="user.hasPulledUserInfo && !user.isLogin()"  active-class="btn-active" class="btn btn-ghost">登录</RouterLink>
+          <UserMenu v-else-if="user.isLogin()" />
         </div>
 
       </nav>
