@@ -6,6 +6,10 @@ import FriendIcon from "@/components/navbar/icons/FriendIcon.vue";
 import CreateIcon from "@/components/navbar/icons/CreateIcon.vue";
 import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
 import { RouterLink } from 'vue-router'
+import {userUserStore} from "@/stores/user.js";
+import UserMenu from "@/components/navbar/UserMenu.vue";
+
+const user = userUserStore()
 </script>
 
 <template>
@@ -34,7 +38,12 @@ import { RouterLink } from 'vue-router'
 
         <!-- 右 -->
         <div class="navbar-end">
-          <RouterLink to="/login" active-class="btn-active" class="btn btn-ghost">登录</RouterLink>
+          <RouterLink to="/create" v-if="user.isLogin()" class="btn btn-ghost text-base mr-6" active-class="btn-active">
+            <CreateIcon />
+            创作
+          </RouterLink>
+          <RouterLink to="/login" v-if="!user.isLogin()"  active-class="btn-active" class="btn btn-ghost">登录</RouterLink>
+          <UserMenu v-else />
         </div>
 
       </nav>
