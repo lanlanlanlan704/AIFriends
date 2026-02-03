@@ -14,7 +14,7 @@ export const useUserStore = defineStore("user", () => {
     function setAccessToken(token) {
         accessToken.value = token
     }
-    function setUserInfo(data)
+    function setUserInfo(data)     //不规定形参类型，传进来什么类型参数就是什么类型
     {
         id.value = data.user_id
         username.value = data.username

@@ -25,7 +25,7 @@ async function handleLogin() {
       if (data.result === 'success'){
         user.setAccessToken(data.access)
         user.setUserInfo(data)
-        await router.push({
+        await router.push({    // 加上await是优化用户体验，保证加载完信息之后再进行路由跳转，避免用户在登陆后刷新页面时依然看见登录键
           name: 'Home'
         })
       } else{
