@@ -9,10 +9,10 @@ class GetSingleCharacterView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
-            charcter_id = request.query_params.get('charcter_id')
-            character = Character.objects.get(pk=charcter_id, author__user=request.user)
+            character_id = request.query_params.get('character_id')
+            character = Character.objects.get(pk=character_id, author__user=request.user)
             return Response({
-                'result':'success',
+                'result': 'success',
                 'character': {
                     'id': character.id,
                     'name': character.name,

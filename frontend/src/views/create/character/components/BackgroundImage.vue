@@ -66,7 +66,7 @@ defineExpose({
       <div v-if="myBackgroundImage" class="w-15 h-25 rounded-box">
         <img :src="myBackgroundImage" alt="">
       </div>
-      <div v-else class="w-15 min-h-6.25rem rounded-box bg-base-300"></div>
+      <div v-else class="w-15 min-h-6.25rem rounded-box bg-base-200"></div>
       <div @click="fileInputRef.click()" class="w-15 min-h-6.25rem rounded-box absolute left-0 top-0 bg-black/20 flex justify-center items-center cursor-pointer">
         <CameraIcon/>
       </div>

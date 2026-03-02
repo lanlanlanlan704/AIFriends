@@ -40,7 +40,7 @@ async function handleCreate(){
     formData.append('photo', base64ToFile(photo,'photo.png'))
 
     try {
-      const res = await api.post('api/create/character/create/', formData)
+      const res = await api.post('/api/create/character/create/', formData)
       const data = res.data
       if (data.result === 'success') {
         await router.push({
@@ -53,7 +53,7 @@ async function handleCreate(){
         errorMessage.value=data.result
       }
     } catch (err){
-      console.log(err)
+
     }
   }
 }
