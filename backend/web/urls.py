@@ -13,6 +13,7 @@ from web.views.user.account.logout import LogoutView
 from web.views.user.account.refresh_token import RefreshTokenView
 from web.views.user.account.register import RegisterView
 from web.views.user.profile.update import UpdateProfileView
+from web.views.homepage.index import HomepageIndexView
 
 urlpatterns = [
     path('api/user/account/login/',LoginView.as_view()),
@@ -26,6 +27,7 @@ urlpatterns = [
     path('api/create/character/get_single/', GetSingleCharacterView.as_view()),
     path('api/create/character/remove/', RemoveCharacterView.as_view()),
     path('api/create/character/get_list/', GetListCharacterView.as_view()),
+    path('api/homepage/index/', HomepageIndexView.as_view()),
     path('', index),
     re_path(r'^(?!media/|static/|assets/).*$', index)
 ]
