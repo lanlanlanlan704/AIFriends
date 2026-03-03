@@ -5,11 +5,31 @@ import HomepageIcon from "@/components/navbar/icons/HomepageIcon.vue";
 import FriendIcon from "@/components/navbar/icons/FriendIcon.vue";
 import CreateIcon from "@/components/navbar/icons/CreateIcon.vue";
 import SearchIcon from "@/components/navbar/icons/SearchIcon.vue";
-import { RouterLink } from 'vue-router'
+import {RouterLink, useRoute, useRouter} from 'vue-router'
 import {useUserStore} from "@/stores/user.js";
 import UserMenu from "@/components/navbar/UserMenu.vue";
+import {ref, watch} from "vue";
 
 const user = useUserStore()
+const searchQuery = ref('')
+const router = useRouter()
+const route = useRoute()
+
+watch(() => route.query.q, newQ => {
+  searchQuery.value = newQ || ''
+})
+
+
+function handleSearch() {
+  router.push({
+    name: 'Home',
+    query: {
+      q: searchQuery.value.trim(),
+    }
+  })
+}
+
+
 </script>
 
 <template>
@@ -28,12 +48,12 @@ const user = useUserStore()
 
         <!-- 中 -->
         <div class="navbar-center w-4/5 max-w-180 flex justify-center">
-          <div class="join w-4/5 max-w-180 flex justify-center">
-            <input class="input join-item" placeholder="搜索你感兴趣的内容" />
+          <form @submit.prevent="handleSearch" class="join w-4/5 max-w-180 flex justify-center">
+            <input v-model="searchQuery" class="input join-item" placeholder="搜索你感兴趣的内容" />
             <button class="btn join-item rounded-r-full gap-0">
               <SearchIcon />搜索
             </button>
-          </div>
+          </form>
         </div>
 
         <!-- 右 -->
