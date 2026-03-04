@@ -26,7 +26,7 @@ class ChatGraph:
             messages: Annotated[Sequence[BaseMessage], add_messages]
 
         def model_call(state: AgentState) -> AgentState:
-            res = llm.invoke(state['messages'])
+            res = llm.invoke (state['messages'])
             return {'messages': [res]}
 
         graph = StateGraph(AgentState)
