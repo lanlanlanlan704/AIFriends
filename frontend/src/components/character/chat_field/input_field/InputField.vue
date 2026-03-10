@@ -113,7 +113,7 @@ async function handleSend(event, audio_msg) {
 
   initAudioStream()
 
-  const curId = ++ processId
+  const curId = ++processId
   message.value = ''
 
   emit('pushBackMessage', {role: 'user', content: content, id: crypto.randomUUID()})
@@ -143,13 +143,13 @@ async function handleSend(event, audio_msg) {
 }
 
 function close() {
-  ++ processId
+  ++processId
   showMic.value = false
   stopAudio()
 }
 
 function handleStop() {
-  ++ processId
+  ++processId
   stopAudio()
 }
 
@@ -169,10 +169,10 @@ defineExpose({
         placeholder="文本输入..."
     >
     <div @click="handleSend" class="absolute right-2 w-8 h-8 flex justify-center items-center cursor-pointer">
-      <SendIcon />
+      <SendIcon/>
     </div>
     <div @click="showMic = true" class="absolute right-10 w-8 h-8 flex justify-center items-center cursor-pointer">
-      <MicIcon />
+      <MicIcon/>
     </div>
   </form>
   <Microphone

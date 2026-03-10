@@ -49,7 +49,7 @@ const float32ToInt16 = (float32Array) => {
 };
 
 const sendToBackend = async (arrayBuffer) => {
-  const blob = new Blob([arrayBuffer], { type: "audio/pcm" })
+  const blob = new Blob([arrayBuffer], {type: "audio/pcm"})
   const formData = new FormData()
   formData.append("audio", blob, 'voice.pcm')
 
@@ -80,16 +80,16 @@ onBeforeUnmount(() => {
   <div class="absolute bottom-4 left-2 h-12 w-86 flex items-center bg-black/30 backdrop-blur-sm rounded-2xl">
     <div v-if="isSpeaking" class="flex items-center justify-center gap-1 h-6 flex-1">
       <div
-        v-for="i in 32" :key="i"
-        class="w-0.5 bg-blue-400 rounded-full animate-wave"
-        :style="{ animationDelay: `${i * 0.1}s` }"
+          v-for="i in 32" :key="i"
+          class="w-0.5 bg-blue-400 rounded-full animate-wave"
+          :style="{ animationDelay: `${i * 0.1}s` }"
       ></div>
     </div>
     <div v-else class="text-white/50 text-base w-full text-center">
       语音输入
     </div>
     <div @click="emit('close')" class="absolute right-2 w-8 h-8 flex justify-center items-center cursor-pointer">
-      <KeyboardIcon />
+      <KeyboardIcon/>
     </div>
   </div>
 </template>
@@ -101,7 +101,13 @@ onBeforeUnmount(() => {
 }
 
 @keyframes wave-animation {
-  0% { height: 4px; opacity: 0.3; }
-  100% { height: 20px; opacity: 1; }
+  0% {
+    height: 4px;
+    opacity: 0.3;
+  }
+  100% {
+    height: 20px;
+    opacity: 1;
+  }
 }
 </style>
