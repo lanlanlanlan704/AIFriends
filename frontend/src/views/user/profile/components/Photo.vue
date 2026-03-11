@@ -18,7 +18,7 @@ let croppie = null
 
 async function openModal(photo) {
   modalRef.value.showModal()
-  await nextTick()
+  await nextTick()  //等DOM元素渲染好之后才进行下一步
 
   if (!croppie) {
     croppie = new Croppie(croppieRef.value, {

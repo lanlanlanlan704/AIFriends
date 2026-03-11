@@ -12,7 +12,7 @@ import {useUserStore} from "@/stores/user.js";
 
 const user = useUserStore()
 const router = useRouter()
-const route = useRoute()
+const route = useRoute() // route可以视为前端快照，这里主要是为了获取角色id，好从后端获取数据，效果为可以在修改角色界面看到当前角色的所有信息
 const characterId = route.params.character_id
 const character = ref(null)
 

@@ -10,7 +10,7 @@ import api from "@/js/http/api.js";
 import {useRouter} from "vue-router";
 import {useUserStore} from "@/stores/user.js";
 
-const router = useRouter()
+const router = useRouter() //负责进行页面路由跳转
 const user = useUserStore()
 const photoRef = useTemplateRef('photo-ref')
 const nameRef = useTemplateRef('name-ref')

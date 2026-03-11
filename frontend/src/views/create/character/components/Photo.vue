@@ -10,7 +10,7 @@ watch(() => props.photo, newVal => {
   myPhoto.value = newVal
 })
 
-const fileInputRef = useTemplateRef('file-input-ref')
+const fileInputRef = useTemplateRef('file-input-ref') //useTemplateRef=专门用来拿页面元素（DOM）的工具函数，在标签上写ref=“xxx”,用这个函数就能拿到他
 const modalRef = useTemplateRef('modal-ref')
 const croppieRef = useTemplateRef('croppie-ref')
 let croppie = null
@@ -33,7 +33,7 @@ async function openModal(photo){
 }
 
 async function crop() {
-  if (!croppie) return
+  if (!croppie) return //croppie定义为一个裁剪工具的变量，在选择图片时被创建，此时存在
   myPhoto.value = await croppie.result({
     type: 'base64',
     size: 'viewport',
@@ -78,7 +78,7 @@ defineExpose({
 
   <input ref="file-input-ref" type="file" class="hidden" accept="image/*" @change="onFileChange">
 
-  <dialog ref="modal-ref" class="modal">
+  <dialog ref="modal-ref" class="modal">  <!--dialog的部分是阴影+弹窗，dialog是弹窗标签-->
     <div class="modal-box transition-none">
       <button @click="modalRef.close()" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
 
