@@ -8,16 +8,18 @@ import {base64ToFile} from "@/js/utils/base64_to_file.js";
 import api from "@/js/http/api.js";
 import {useRoute, useRouter} from "vue-router";
 import {useUserStore} from "@/stores/user.js";
-
+import Voice from "@/views/create/character/components/Voice.vue";
 
 const user = useUserStore()
-const router = useRouter()
+const router = useRouter() //路由进行跳转
 const route = useRoute() // route可以视为前端快照，这里主要是为了获取角色id，好从后端获取数据，效果为可以在修改角色界面看到当前角色的所有信息
 const characterId = route.params.character_id
 const character = ref(null)
 
+const voices = ref([])
+const curVoiceId = ref(null)
 
-onMounted(async () => {
+onMounted(async () => {   //onMounted在页面加载完毕后便开始执行
   try {
     const res = await api.get('/api/create/character/get_single/', {
       params: {
@@ -32,38 +34,44 @@ onMounted(async () => {
   }
 })
 
-
-
 const photoRef = useTemplateRef('photo-ref')
 const nameRef = useTemplateRef('name-ref')
+const voiceRef = useTemplateRef('voice-ref')
 const profileRef = useTemplateRef('profile-ref')
 const backgroundImageRef = useTemplateRef('background-image-ref')
-const errorMessage = ref(null)
-async function handleUpdate(){
+const errorMessage = ref('')
+
+async function handleUpdate() {
   const photo = photoRef.value.myPhoto
   const name = nameRef.value.myName?.trim()
+  const voice = voiceRef.value.myVoice
   const profile = profileRef.value.myProfile?.trim()
   const backgroundImage = backgroundImageRef.value.myBackgroundImage
 
   errorMessage.value = ''
   if (!photo) {
     errorMessage.value = '头像不能为空'
-  }else if (!name){
+  } else if (!name) {
     errorMessage.value = '名字不能为空'
-  } else if (!profile){
+  } else if (!voice) {
+    errorMessage.value = '音色不能为空'
+  } else if (!profile) {
     errorMessage.value = '角色介绍不能为空'
-  } else if (!backgroundImage){
+  } else if (!backgroundImage) {
     errorMessage.value = '聊天背景不能为空'
   } else {
     const formData = new FormData()
     formData.append('character_id', characterId)
-    formData.append('name',name)
+    formData.append('name', name)
+    formData.append('voice_id', voice)
     formData.append('profile', profile)
-    if (backgroundImage!==character.value.background_image){
-      formData.append('background_image', base64ToFile(backgroundImage,'background_image.png'))
+
+    if (photo !== character.value.photo) {
+      formData.append('photo', base64ToFile(photo, 'photo.png'))
     }
-    if (photo !== character.value.photo){
-      formData.append('photo', base64ToFile(photo,'photo.png'))
+
+    if (backgroundImage !== character.value.background_image) {
+      formData.append('background_image', base64ToFile(backgroundImage, 'background_image.png'))
     }
 
     try {
@@ -71,16 +79,15 @@ async function handleUpdate(){
       const data = res.data
       if (data.result === 'success') {
         await router.push({
-          name:'Space',
-          params:{
+          name: 'Space',
+          params: {
             user_id: user.id,
           }
         })
       } else {
-        errorMessage.value=data.result
+        errorMessage.value = data.result
       }
-    } catch (err){
-
+    } catch (err) {
     }
   }
 }
@@ -88,23 +95,22 @@ async function handleUpdate(){
 
 <template>
   <div v-if="character" class="flex justify-center">
-    <div class="card w-120 bg-base-200 shadow-sm mt-1">
+    <div class="card w-120 bg-base-200 shadow-sm mt-16">
       <div class="card-body">
-        <h3 class="text-lg font-bold">更新角色</h3>
+        <h3 class="text-lg font-bold my-4">更新角色</h3>
         <Photo ref="photo-ref" :photo="character.photo" />
-        <Name ref="name-ref" :name="character.name"/>
-        <Profile ref="profile-ref" :profile="character.profile"/>
+        <Name ref="name-ref" :name="character.name" />
+        <Voice ref="voice-ref" :voices="voices" :curVoiceId="curVoiceId" />
+        <Profile ref="profile-ref" :profile="character.profile" />
         <BackgroundImage ref="background-image-ref" :backgroundImage="character.background_image" />
 
         <p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
-
 
         <div class="flex justify-center">
           <button @click="handleUpdate" class="btn btn-neutral w-60 mt-2">更新</button>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 

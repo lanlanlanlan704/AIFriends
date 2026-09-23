@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,7 +30,7 @@ SECRET_KEY = "django-insecure-c6nh$7*&g1a*gqaxlpd6h!valq1cf9d1n$9-nta6ov)=$gaf$_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'app7703.acapp.acwing.com.cn']
 
 
 # Application definition
@@ -78,13 +80,33 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+#
+# 默认走 SQLite（不设任何环境变量时行为和以前完全一致）。
+# 要切到 PostgreSQL，只需在 backend/.env 里加一行：
+#     DB_ENGINE=postgresql
+# 再按需覆盖 DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT。
+DB_ENGINE = os.getenv('DB_ENGINE', 'sqlite3')
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if DB_ENGINE == 'postgresql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'aifriends'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            # 复用连接，避免每个请求都重新握手（WSGI 是每请求一线程）
+            'CONN_MAX_AGE': 60,
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -124,19 +146,21 @@ USE_TZ = True
 
 # 设置static和media静态文件路径
 STATIC_URL = 'static/'
-# STATIC_ROOT = BASE_DIR / 'static'  # 生产阶段使用
 
-STATICFILES_DIRS = [  # 开发阶段使用，生产阶段需要注释掉
-    BASE_DIR / 'static',
-]
+if not DEBUG:
+    STATIC_ROOT = BASE_DIR / 'static'  # 生产阶段使用
 
-MEDIA_URL = 'http://127.0.0.1:8000/media/'
+else:
+    STATICFILES_DIRS = [  # 开发阶段使用，生产阶段需要注释掉
+        BASE_DIR / 'static',
+    ]
+if DEBUG:
+    MEDIA_URL = 'http://127.0.0.1:8000/media/'
+else:
+    MEDIA_URL = 'https://app7703.acapp.acwing.com.cn/media/'
+
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 使用JWT认证
 from datetime import timedelta

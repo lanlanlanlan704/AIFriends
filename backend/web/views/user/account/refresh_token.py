@@ -1,3 +1,4 @@
+#该模块的作用是刷新refresh_token和access_token,并把refresh_token写回cookie中
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response

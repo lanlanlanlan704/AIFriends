@@ -70,6 +70,7 @@ const router = createRouter({
   ],
 })
 
+// 加上路由守卫
 router.beforeEach((to, from) => {
   const user = useUserStore()
   if (to.meta.needLogin && user.hasPulledUserInfo && !user.isLogin()) {

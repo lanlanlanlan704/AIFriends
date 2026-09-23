@@ -1,7 +1,7 @@
 <script setup>
 import {ref, watch} from "vue";
 
-const props = defineProps(['name'])  //父文件给子文件传用prop
+const props = defineProps(['name'])  //父文件给子文件传用props
 const myName = ref(props.name)
 watch(() => props.name, newVal => {
   myName.value = newVal
