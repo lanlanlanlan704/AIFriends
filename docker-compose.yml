@@ -1,0 +1,28 @@
+services:
+  postgres:
+    # Docker Hub 在国内连不上，本机已有 postgres:15-alpine（与另两个项目同版本），故直接用。
+    image: postgres:15-alpine
+    container_name: aifriends-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aifriends
+      POSTGRES_USER: postgres
+      # 密码不写在这里，从项目根目录的 .env 读取（该文件不入库）。
+      # 首次使用：把根目录的 .env.example 复制成 .env，再填一个自己的密码。
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?missing POSTGRES_PASSWORD - copy .env.example to .env first}
+      TZ: Asia/Shanghai
+      PGTZ: Asia/Shanghai
+    ports:
+      # 左边是「你电脑上的门牌号」，右边是「容器里的」（固定 5432，别动）。
+      # 本机 5432 被 deploy 项目的 postgres 占用、5433 被 css-dev 占用，故用 5434。
+      - "5434:5432"
+    volumes:
+      - aifriends_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aifriends"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  aifriends_pgdata:
