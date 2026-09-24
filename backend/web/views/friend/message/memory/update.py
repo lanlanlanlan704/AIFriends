@@ -1,3 +1,6 @@
+import json
+import re
+
 from django.utils.timezone import now
 from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -25,17 +28,30 @@ def create_human_message(friend):
 
 
 def update_memory(friend):
-    app = MemoryGraph.create_app()
+    try:
+        app = MemoryGraph.create_app()
+        inputs = {
+            'messages': [
+                create_system_message(),
+                create_human_message(friend),
+            ]
+        }
+        res = app.invoke(inputs)
+        raw = res['messages'][-1].content
+    except Exception:
+        return                                  # ① 调用失败 → 保留旧记忆
 
-    inputs = {
-        'messages': [
-            create_system_message(),
-            create_human_message(friend),
-        ]
-    }
+    text = re.sub(r'^```(?:json)?\s*|\s*```$', '', (raw or '').strip())
 
-    res = app.invoke(inputs)
-    friend.memory = res['messages'][-1].content
+    try:
+        data = json.loads(text)
+        new_memory = (data.get('memory_summary') or '').strip()
+    except (json.JSONDecodeError, AttributeError):
+        return                                  # ② 解析不出来 → 保留旧记忆
 
+    if not new_memory:
+        return                                  # ③ 取到空的 → 保留旧记忆
+
+    friend.memory = new_memory
     friend.update_time = now()
     friend.save()
