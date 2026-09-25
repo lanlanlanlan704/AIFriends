@@ -2,27 +2,84 @@
 import KeyboardIcon from "@/components/character/icons/KeyboardIcon.vue";
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import {MicVAD} from "@ricky0123/vad-web";
-import api from "@/js/http/api.js";
 import CONFIG_API from "@/js/config/config.js";
+import {useUserStore} from "@/stores/user.js";
 
 const emit = defineEmits(['close', 'send', 'stop'])
 const isSpeaking = ref(false)
+const asrText = ref('')        // 界面上显示的识别结果
 
 let vadInstance = null;
+let ws = null;
+let stopped = false;           // 组件是不是已经关掉了
+let streaming = false;         // 现在是不是在往服务器送音频
+let finishing = false;         // 已经喊停了，在等服务器把最后一句吐完
+const preRoll = [];            // 说话前的几帧，先存着，防止把第一个字切掉
+
+// 连上后端的 WebSocket
+const connectWS = () => {
+  const token = useUserStore().accessToken
+  ws = new WebSocket(`${CONFIG_API.WS_URL}?token=${token}`)
+
+  ws.onopen = () => {
+    console.log("[WS] 已连上后端")
+  }
+
+  ws.onmessage = (event) => {
+    const {text, final} = JSON.parse(event.data)
+    asrText.value = text       // 服务器每次给的都是"到目前为止的完整文字"，直接覆盖
+    if (final) console.log("[WS] 这句说完了:", text)
+  }
+
+  ws.onerror = (e) => {
+    console.error("[WS] 出错:", e)
+  }
+
+  ws.onclose = () => {
+    // 服务器把最后一句吐完就主动断开了，这时候才真的把文字发出去
+    if (finishing) {
+      finishing = false
+      const result = asrText.value.trim()
+      asrText.value = ''
+      if (result) emit('send', null, result)
+    }
+    if (!stopped) connectWS()    // 断了就重连，保证下一句还能用
+  }
+}
+
+// 连接还没准备好的时候，音频先丢掉，不报错
+const wsSend = (data) => {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(data)
+  }
+}
 
 const startRecording = async () => {
   const baseUrl = CONFIG_API.VAD_URL
   try {
     vadInstance = await MicVAD.new({
       baseAssetPath: baseUrl,
+      onFrameProcessed: (probs, frame) => {
+        const pcm = float32ToInt16(frame)
+        if (streaming) {
+          wsSend(pcm)              // 在说话，直接送出去
+        } else {
+          preRoll.push(pcm)        // 还没说话，先攒着，最多留 8 帧
+          if (preRoll.length > 8) preRoll.shift()
+        }
+      },
       onSpeechStart: () => {
         isSpeaking.value = true;
+        streaming = true;
         emit('stop')
+        preRoll.forEach(f => wsSend(f))   // 把说话前的几帧补送上去
+        preRoll.length = 0
       },
-      onSpeechEnd: (audio) => {
+      onSpeechEnd: () => {
         isSpeaking.value = false;
-        const pcm16 = float32ToInt16(audio);
-        sendToBackend(pcm16);
+        streaming = false;
+        finishing = true;
+        wsSend(JSON.stringify({action: 'finish'}))
       },
       ortConfig: (ort) => {
         ort.env.wasm.wasmPaths = baseUrl;
@@ -49,27 +106,17 @@ const float32ToInt16 = (float32Array) => {
   return buffer.buffer;
 };
 
-const sendToBackend = async (arrayBuffer) => {
-  const blob = new Blob([arrayBuffer], {type: "audio/pcm"})
-  const formData = new FormData()
-  formData.append("audio", blob, 'voice.pcm')
-
-  try {
-    const res = await api.post('/api/friend/message/asr/asr/', formData)
-    const data = res.data
-    if (data.result === 'success') {
-      emit('send', null, data.text)
-    }
-  } catch (err) {
-    console.error(err)
-  }
-};
-
 onMounted(() => {
+  connectWS()
   startRecording()
 })
 
 onBeforeUnmount(() => {
+  stopped = true
+  if (ws) {
+    ws.close()
+    ws = null
+  }
   if (vadInstance) {
     vadInstance.destroy()
     vadInstance = null
@@ -79,7 +126,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="absolute bottom-4 left-2 h-12 w-86 flex items-center bg-black/30 backdrop-blur-sm rounded-2xl">
-    <div v-if="isSpeaking" class="flex items-center justify-center gap-1 h-6 flex-1">
+    <div v-if="asrText" class="text-white text-base w-full text-center truncate px-10">
+      {{ asrText }}
+    </div>
+    <div v-else-if="isSpeaking" class="flex items-center justify-center gap-1 h-6 flex-1">
       <div
           v-for="i in 32" :key="i"
           class="w-0.5 bg-blue-400 rounded-full animate-wave"

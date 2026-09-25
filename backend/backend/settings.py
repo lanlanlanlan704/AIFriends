@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'app7703.acapp.acwing.com.cn']
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",                    # 新增，且必须在第一位
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'web',
     'corsheaders',
+    "channels",                  # 新增
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
+
+ASGI_APPLICATION = "backend.asgi.application"
 
 
 # Database

@@ -7,6 +7,7 @@ import uuid
 from queue import Queue
 
 import websockets
+from asgiref.sync import sync_to_async
 from django.http import StreamingHttpResponse
 from langchain_core.messages import HumanMessage, BaseMessageChunk, SystemMessage, AIMessage
 from rest_framework.renderers import BaseRenderer
@@ -24,6 +25,24 @@ class SSERenderer(BaseRenderer):
     format = 'txt'
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
+
+
+_DONE = object()
+
+
+async def wrap_sync_iter(sync_iter):
+    """把同步生成器包成异步生成器。
+
+    ASGI 下 Django 只认异步迭代器，碰到同步生成器会退回成"先全部攒起来再一次性发"
+    （django/http/response.py:543 的 `await sync_to_async(list)(...)`），流式就没了。
+    这里改成一次只取一段（sync_to_async 把取数丢回同步线程执行），流式保持住。
+    """
+    it = iter(sync_iter)
+    while True:
+        part = await sync_to_async(next, thread_sensitive=True)(it, _DONE)
+        if part is _DONE:
+            return
+        yield part
 
 
 def add_system_prompt(state, friend):
@@ -73,7 +92,7 @@ class MessageChatView(APIView):
         inputs = add_recent_messages(inputs, friend)
 
         response = StreamingHttpResponse(
-            self.event_stream(app, inputs, friend, message),
+            wrap_sync_iter(self.event_stream(app, inputs, friend, message)),
             content_type='text/event-stream',
         )
         response['Cache-Control'] = 'no-cache'
