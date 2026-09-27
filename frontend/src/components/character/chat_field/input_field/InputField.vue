@@ -1,16 +1,22 @@
 <script setup>
 import SendIcon from "@/components/character/icons/SendIcon.vue";
 import MicIcon from "@/components/character/icons/MicIcon.vue";
-import {onUnmounted, ref, useTemplateRef} from "vue";
+import {computed, nextTick, onUnmounted, ref, useTemplateRef} from "vue";
 import streamApi from "@/js/http/streamApi.js";
 import Microphone from "@/components/character/chat_field/input_field/Microphone.vue";
 
 const props = defineProps(['friendId'])
 const emit = defineEmits(['pushBackMessage', 'addToLastMessage'])
 const inputRef = useTemplateRef('input-ref')
+const micRef = useTemplateRef('mic-ref')
 const message = ref('')
 let processId = 0
-const showMic = ref(false)
+
+// 麦克风组件第一次点击才挂载（那时候才会向浏览器申请麦克风权限），之后一直留着
+const micMounted = ref(false)
+const micRecording = computed(() => micRef.value?.recording ?? false)
+const micBusy = computed(() => !!(micRef.value?.connecting || micRef.value?.finishing))
+let micPrefix = ''            // 录音开始前输入框里已有的文字，识别结果接在它后面
 
 let mediaSource = null;
 let sourceBuffer = null;
@@ -144,13 +150,47 @@ async function handleSend(event, audio_msg) {
 
 function close() {
   ++processId
-  showMic.value = false
   stopAudio()
+  if (micRecording.value || micBusy.value) micRef.value?.stop()
 }
 
 function handleStop() {
   ++processId
   stopAudio()
+}
+
+// ---------- 语音输入：点麦克风图标开始，再点一下停止 ----------
+
+// 把"录音前已有的文字"和"这一轮识别出的文字"拼起来
+function mergeMicText(text) {
+  return [micPrefix, text].filter(Boolean).join(' ')
+}
+
+async function toggleMic() {
+  if (micBusy.value) return              // 准备中 / 收尾中，点了不算
+
+  if (!micMounted.value) {
+    micMounted.value = true
+    await nextTick()                     // 等组件挂载完，micRef 才有值
+  }
+
+  if (micRecording.value) micRef.value?.stop()
+  else micRef.value?.start()
+}
+
+function handleMicStart() {
+  micPrefix = message.value.trim()       // 记下原有内容
+  handleStop()                           // 打断正在播放的 AI 语音
+}
+
+function handleMicLive(text) {
+  message.value = mergeMicText(text)     // 边识别边往输入框里填
+}
+
+function handleMicFinish(text) {
+  message.value = mergeMicText(text)
+  micPrefix = ''
+  focus()                                // 光标落到输入框，方便直接改
 }
 
 defineExpose({
@@ -160,7 +200,7 @@ defineExpose({
 </script>
 
 <template>
-  <form v-if="!showMic" @submit.prevent="handleSend" class="absolute bottom-4 left-2 h-12 w-86 flex items-center">
+  <form @submit.prevent="handleSend" class="absolute bottom-4 left-2 h-12 w-86 flex items-center">
     <input
         ref="input-ref"
         v-model="message"
@@ -171,15 +211,26 @@ defineExpose({
     <div @click="handleSend" class="absolute right-2 w-8 h-8 flex justify-center items-center cursor-pointer">
       <SendIcon/>
     </div>
-    <div @click="showMic = true" class="absolute right-10 w-8 h-8 flex justify-center items-center cursor-pointer">
-      <MicIcon/>
+
+    <!-- 麦克风：点一下开始说话，再点一下结束；录音中变红、图标变停止方块 -->
+    <div
+        @click="toggleMic"
+        class="absolute right-10 w-8 h-8 flex justify-center items-center rounded-full cursor-pointer transition-colors"
+        :class="micRecording ? 'bg-red-500 hover:bg-red-400' : 'hover:bg-white/15'"
+    >
+      <div v-if="micRecording" class="w-2.5 h-2.5 bg-white rounded-sm"></div>
+      <span v-else-if="micBusy" class="loading loading-spinner loading-xs text-white"></span>
+      <MicIcon v-else/>
     </div>
   </form>
+
+  <!-- 录音组件：只管录音和画倒计时条，界面交给上面的输入框 -->
   <Microphone
-      v-else
-      @close="showMic = false"
-      @send="handleSend"
-      @stop="handleStop"
+      v-if="micMounted"
+      ref="mic-ref"
+      @start="handleMicStart"
+      @live="handleMicLive"
+      @finish="handleMicFinish"
   />
 </template>
 
