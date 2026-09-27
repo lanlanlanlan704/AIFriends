@@ -122,8 +122,13 @@ async function handleSend(event, audio_msg) {
   const curId = ++processId
   message.value = ''
 
-  emit('pushBackMessage', {role: 'user', content: content, id: crypto.randomUUID()})
-  emit('pushBackMessage', {role: 'ai', content: '', id: crypto.randomUUID()})
+  // 这一对消息是"此刻"发出的，用当前时间。
+  // ⚠️ 这是浏览器的时间，只用于"立刻显示"；页面重新加载后会换成后端存的真实时间。
+  // 用 new Date().toISOString() 生成 UTC 的 ISO 字符串，和 Message.vue 的解析方式保持一致。
+  const sendTime = new Date().toISOString()
+
+  emit('pushBackMessage', {role: 'user', content: content, id: crypto.randomUUID(), time: sendTime})
+  emit('pushBackMessage', {role: 'ai', content: '', id: crypto.randomUUID(), time: sendTime})
 
   try {
     await streamApi('/api/friend/message/chat/', {

@@ -21,6 +21,9 @@ class GetHistoryView(APIView):
                     'id': m.id,
                     'user_message': m.user_message,
                     'output': m.output,
+                    # 带时区的时间戳（ISO 8601，例：2026-09-20T14:32:05+08:00）
+                    # 前端 new Date(...) 能直接解析，且自带时区信息，不怕浏览器时区不同
+                    'create_time': m.create_time.isoformat(),
                 })
             return Response({
                 'result': 'success',

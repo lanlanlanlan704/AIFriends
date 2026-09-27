@@ -50,11 +50,13 @@ async function loadMore() {
           role: 'ai',
           content: m.output,
           id: crypto.randomUUID(),
+          time: m.create_time,        // 后端给的真实发送时间（ISO 字符串）
         })
         emit('pushFrontMessage', {
           role: 'user',
           content: m.user_message,
           id: crypto.randomUUID(),
+          time: m.create_time,
         })
         lastMessageId = m.id
       }
@@ -107,11 +109,14 @@ defineExpose({
 <template>
   <div ref="scroll-ref" class="absolute top-18 left-0 w-90 h-112 overflow-y-scroll no-scrollbar">
     <div ref="sentinel-ref" class="h-2"></div>
+    <!-- prevMessage = 上一条消息（含 role 和 time），交给 Message 判断"这条要不要显示时间"
+         （同一个人连续多条、且同一分钟内，才不重复显示） -->
     <Message
-        v-for="message in history"
+        v-for="(message, index) in history"
         :key="message.id"
         :message="message"
         :character="character"
+        :prevMessage="history[index - 1]"
     />
   </div>
 </template>
