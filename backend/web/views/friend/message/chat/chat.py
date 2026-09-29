@@ -228,3 +228,10 @@ class MessageChatView(APIView):
         )
         if Message.objects.filter(friend=friend).count() % 10 == 0:
             update_memory(friend)
+
+        # 用户回了一句 = 新一轮开始，允许 AI 之后再主动说一次
+        # （主动消息功能 2026-09-28 暂时关闭，见 web/routing.py；这行留着备用，
+        #   proactive_done 恒为 False 时不会有任何影响）
+        if friend.proactive_done:
+            friend.proactive_done = False
+            friend.save()

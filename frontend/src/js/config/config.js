@@ -4,20 +4,24 @@ const CONFIG_API = {
     HTTP_URL: '',
     VAD_URL: '',
     WS_URL: '',   // 语音识别用的 WebSocket 地址
+    PROACTIVE_WS_URL: '',   // AI 主动发消息用的 WebSocket 地址
 }
 
 if (platform === 'vue') {
     CONFIG_API.HTTP_URL = 'http://127.0.0.1:8000'
     CONFIG_API.VAD_URL = 'http://localhost:5173/vad/'
     CONFIG_API.WS_URL = 'ws://127.0.0.1:8000/ws/asr/'
+    CONFIG_API.PROACTIVE_WS_URL = 'ws://127.0.0.1:8000/ws/proactive/'
 } else if (platform === 'django') {
     CONFIG_API.HTTP_URL = 'http://127.0.0.1:8000'
     CONFIG_API.VAD_URL = 'http://127.0.0.1:8000/static/frontend/vad/'
     CONFIG_API.WS_URL = 'ws://127.0.0.1:8000/ws/asr/'
+    CONFIG_API.PROACTIVE_WS_URL = 'ws://127.0.0.1:8000/ws/proactive/'
 } else if (platform === 'cloud') {
     CONFIG_API.HTTP_URL = 'https://app7703.acapp.acwing.com.cn'
     CONFIG_API.VAD_URL = 'https://app7703.acapp.acwing.com.cn/static/frontend/vad/'
     CONFIG_API.WS_URL = 'wss://app7703.acapp.acwing.com.cn/ws/asr/'
+    CONFIG_API.PROACTIVE_WS_URL = 'wss://app7703.acapp.acwing.com.cn/ws/proactive/'
 }
 
 export default CONFIG_API
